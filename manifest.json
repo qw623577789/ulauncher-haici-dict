@@ -10,7 +10,7 @@
 	},
 	"preferences": [
 	  {
-		"id": "keyword",
+		"id": "haici-dict",
 		"type": "keyword",
 		"name": "Haici Dict",
 		"description": "translater",

@@ -25,12 +25,12 @@ class HaiciDictExtension(Extension):
 
 class KeywordQueryEventListener(EventListener):
 
-    def getMd5(value):
+    def getMd5(self, value):
         md5 = hashlib.md5()   
         md5.update(value)
         return  md5.hexdigest()
 
-    def getToken(word):
+    def getToken(self, word):
         url = 'http://apii.dict.cn/mini.php?q=' + word
         headers = {
             'Cookie' :  'dictsid=1201.373420645.1071507.128476'
@@ -52,9 +52,9 @@ class KeywordQueryEventListener(EventListener):
             if response:
                 response.close()
 
-    def getExplain(word, token):
+    def getExplain(self, word, token):
         t = word + 'dictcn' + token
-        query = { 'q' : word, 's' : 2,  't' : getMd5(t)}
+        query = { 'q' : word, 's' : 2,  't' : self.getMd5(t)}
         serializeData = urllib.urlencode(query)
         url = "http://apii.dict.cn/ajax/dictcontent.php"
         headers = {
@@ -81,36 +81,39 @@ class KeywordQueryEventListener(EventListener):
         word = event.get_argument()
         icon = 'images/icon.png'
         showList = []
-        if query:
-            #step1. get token
+        if word:
+            #step1. get token3
             token = self.getToken(word)
+            print token
             if token == False:
                 showList.append(ExtensionResultItem(icon=icon, name='network error in getting token,please try again', on_enter=HideWindowAction()))
 
             #step2. get explain by token
-           explain = self.getExplain(word, token)
-           if explain == False:
-               showList.append(ExtensionResultItem(icon=icon, name='network error in getting explain,please try again', on_enter=HideWindowAction()))
+            explain = self.getExplain(word, token)
+            print explain
+            if explain == False:
+                showList.append(ExtensionResultItem(icon=icon, name='network error in getting explain,please try again', on_enter=HideWindowAction()))
 
             #step3. analazy
             jsonResult = json.loads(explain)
-            if !('e' in  jsonResult):
+            if 'e' not in  jsonResult:
                 showList.append(ExtensionResultItem(icon=icon, name='no result', on_enter=HideWindowAction()))
-            else
+            else:
                 for item in jsonResult['e'].split('<br />'):
                     showList.append(ExtensionResultItem(icon=icon, name=item, on_enter=CopyToClipboardAction(item)))
                 
                 # if has speech
-                if !('t' in  jsonResult):
-                    showList.append(ExtensionResultItem(icon=icon, name='-------------speech-------------', on_enter=HideWindowAction()))
+                if 't' in  jsonResult:
+                    showList.append(ExtensionResultItem(icon=icon, name='**inflections below**', on_enter=HideWindowAction()))
                     for item in jsonResult['t'].replace('<i>', '').replace('</i>', '').replace('&nbsp;', '').split('\r\n'):
-                        showList.append(ExtensionResultItem(icon=icon, name=item, on_enter=CopyToClipboardAction(item)))
+                        if item != '':
+                            showList.append(ExtensionResultItem(icon=icon, name=item, on_enter=CopyToClipboardAction(item)))
 
         else:
             showList.append(ExtensionResultItem(icon=icon, name='please type in some words', on_enter=HideWindowAction()))
 
         #to render result
-        return RenderResultListAction(items)
+        return RenderResultListAction(showList)
 
 if __name__ == '__main__':
     HaiciDictExtension().run()
