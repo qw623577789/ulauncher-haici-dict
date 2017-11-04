@@ -1,0 +1,20 @@
+{
+	"manifest_version": "1",
+	"api_version": "1",
+	"name": "Haici Dict",
+	"description": "translater",
+	"developer_name": "Skip",
+	"icon": "images/icon.png",
+	"options": {
+	  "query_debounce": 0.5
+	},
+	"preferences": [
+	  {
+		"id": "keyword",
+		"type": "keyword",
+		"name": "Haici Dict",
+		"description": "translater",
+		"default_value": "hc"
+	  }
+	]
+  }
